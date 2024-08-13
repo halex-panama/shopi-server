@@ -1,19 +1,29 @@
-const express = require("express");
-const cors = require("cors");
-require("dotenv").config();
+import express, { Express, Request, Response } from "express";
+import cors from "cors";
+import "dotenv/config";
+import Stripe from "stripe";
 
 const CLIENT_URL = process.env.CLIENT_URL;
 const PORT = process.env.PORT;
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 
-const app = express();
+type CartItem = {
+  title: string;
+  id: string | number;
+  discountedPrice: number;
+  quantity: number;
+};
+
+const app: Express = express();
 app.use(express.json());
 app.use(cors());
 
-const stripe = require("stripe")(STRIPE_SECRET_KEY);
+const stripe = new Stripe(STRIPE_SECRET_KEY);
+
+app.listen(PORT, () => console.log("Server is running"));
 
 app.post("/create-checkout-session", async (req, res) => {
-  const lineItems = req.body.items.map((item) => {
+  const lineItems: CartItem[] = req.body.items.map((item: CartItem) => {
     return {
       price_data: {
         currency: "usd",
@@ -42,5 +52,3 @@ app.post("/create-checkout-session", async (req, res) => {
     })
   );
 });
-
-app.listen(PORT, () => console.log(`Server listen to port ${PORT}`));
